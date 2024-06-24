@@ -85,13 +85,21 @@ def slide_generator(text, prs):
     )
     ppt_header = ppt_title.choices[0].message.content
 
-    # 将图像和文本添加到幻灯片
+    # 添加新的幻灯片
     slide = prs.slides.add_slide(prs.slide_layouts[1])
-    title = slide.shapes.title
-    body = slide.shapes.placeholders[1]
-    title.text = ppt_header
-    body.text = ppt_text
-    slide.shapes.add_picture(image_path, Inches(1), Inches(1), width=Inches(8), height=Inches(6))
+    title_shape = slide.shapes.title
+    title_shape.text = ppt_header
+
+    # 添加图像
+    response = requests.get(image_url)
+    img_bytes = BytesIO(response.content)
+    slide.shapes.add_picture(img_bytes, Inches(1), Inches(1))
+
+    # 添加文本框
+    txBox = slide.shapes.add_textbox(Inches(3), Inches(1), Inches(4), Inches(1.5))
+    tf = txBox.text_frame
+    tf.text = ppt_text
+
 
 def get_slides():
     text = text_field.get("1.0", "end-1c")
@@ -104,6 +112,7 @@ def get_slides():
     for paragraph in paragraphs:
         slide_generator(paragraph, prs)
     prs.save("my_presentation.pptx")
+
 
 app = tk.Tk()
 app.title("Create PPT Slides")
